@@ -1,18 +1,18 @@
 # Docker
 
 ## Требования
-- Установлен **Docker Desktop** (macOS).
+- Установлен **Docker Desktop**.
 
 ## Запуск
 ```bash
-cd "predprof2026_canteen"
+cd "stolovka"
 
 mkdir -p data
 
 docker-compose up --build
 ```
 
-Открыть в браузере: http://localhost:8000
+Открыть в браузере: http://localhost:8080
 
 ## Команды
 ```bash
