@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход — Школьная столовая</title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div class="auth-screen">
+        <div class="auth-card">
+            <h1 class="auth-title">
+                <img class="ui-icon ui-icon-lg" src="{{ url_for('static', filename='img/canteen.svg') }}" alt="">
+                <span>Школьная Столовая</span>
+            </h1>
+
+            <div class="tabs">
+                <div class="tab active" data-tab="login" onclick="switchAuthTab('login', this)">Вход</div>
+                <div class="tab" data-tab="register" onclick="switchAuthTab('register', this)">Регистрация</div>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Логин</label>
+                    <input type="text" class="form-input" name="username" placeholder="Введите логин" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Пароль</label>
+                    <div class="password-wrapper">
+                        <input type="password" class="form-input" name="password" id="loginPassword" placeholder="Введите пароль" required>
+                        <button type="button" class="password-toggle" data-toggle-password="loginPassword" aria-label="Показать пароль" title="Показать пароль">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                <path d="M480-312q70 0 119-49t49-119q0-70-49-119t-119-49q-70 0-119 49t-49 119q0 70 49 119t119 49Zm0-72q-40 0-68-28t-28-68q0-40 28-68t68-28q40 0 68 28t28 68q0 40-28 68t-68 28Zm0 192q-142.6 0-259.8-78.5Q103-349 48-480q55-131 172.2-209.5Q337.4-768 480-768q142.6 0 259.8 78.5Q857-611 912-480q-55 131-172.2 209.5Q622.6-192 480-192Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Войти</button>
+                <p style="text-align: center; margin-top: 16px; color: var(--text-muted); font-size: 12px;">
+                    Тестовые аккаунты:<br>
+                    student1/password123, cook1/password123, admin1/password123
+                </p>
+            </form>
+
+            <form id="registerForm" class="hidden">
+                <div class="form-group">
+                    <label class="form-label">Полное имя</label>
+                    <input type="text" class="form-input" name="full_name" placeholder="Иванов Иван Иванович" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Дата рождения</label>
+                    <input type="date" class="form-input" name="date_of_birth" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Школа</label>
+                    <input type="text" class="form-input" name="school" placeholder="Школа №12" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Класс (с буквой)</label>
+                    <input type="text" class="form-input" name="class_name" placeholder="7А" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Логин</label>
+                    <input type="text" class="form-input" name="username" placeholder="Придумайте логин" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Пароль</label>
+                    <div class="password-wrapper">
+                        <input type="password" class="form-input" name="password" id="registerPassword" placeholder="Придумайте пароль" required>
+                        <button type="button" class="password-toggle" data-toggle-password="registerPassword" aria-label="Показать пароль" title="Показать пароль">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                <path d="M480-312q70 0 119-49t49-119q0-70-49-119t-119-49q-70 0-119 49t-49 119q0 70 49 119t119 49Zm0-72q-40 0-68-28t-28-68q0-40 28-68t68-28q40 0 68 28t28 68q0 40-28 68t-68 28Zm0 192q-142.6 0-259.8-78.5Q103-349 48-480q55-131 172.2-209.5Q337.4-768 480-768q142.6 0 259.8 78.5Q857-611 912-480q-55 131-172.2 209.5Q622.6-192 480-192Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <p style="margin: 12px 0 20px; color: var(--text-muted); font-size: 12px;">
+                    <img class="ui-icon ui-icon-sm" src="{{ url_for('static', filename='img/info.svg') }}" alt=""> Регистрация доступна только для учеников. Аккаунты сотрудников создаются администратором.
+                </p>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script/script.js') }}"></script>
+</body>
+</html>

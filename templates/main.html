@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Школьная столовая — Кабинет</title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div id="mainApp" class="app-container">
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <span class="sidebar-logo-icon" aria-hidden="true"><img class="sidebar-logo-icon-img" src="{{ url_for('static', filename='img/canteen.svg') }}" alt=""></span>
+                <span class="sidebar-logo-text">Столовая</span>
+            </div>
+            <nav class="sidebar-nav" id="sidebarNav"></nav>
+        </div>
+
+    
+        <div class="main-content">
+            <div class="header">
+                <div class="header-content">
+                    <div class="header-title" id="headerTitle">Панель управления</div>
+                    <div class="user-info">
+                        <span class="user-name" id="userName"></span>
+                        <span class="balance-display-header" id="headerBalance">0 ₽</span>
+                        <span class="balance-delta hidden" id="headerBalanceDelta"></span>
+                        <button class="btn btn-secondary btn-small" onclick="logout()">Выход</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container">
+                <div id="studentDashboard" class="hidden">
+                    <div id="studentMenuSection">
+                        <div class="card">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/menu.svg') }}" alt="">Меню на сегодня</div>
+                            <div class="tabs">
+                                <div class="tab active" data-category="breakfast" onclick="loadMenu('breakfast', this)">Завтрак</div>
+                                <div class="tab" data-category="lunch" onclick="loadMenu('lunch', this)">Обед</div>
+                            </div>
+                            <div id="menuList"></div>
+                        </div>
+
+                        <div class="card" style="margin-top: 20px;">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/calendar.svg') }}" alt="">Календарь меню</div>
+                            <div class="tabs">
+                                <div class="tab active" data-view="week" onclick="setMenuCalendarView('week', this)">Неделя</div>
+                                <div class="tab" data-view="month" onclick="setMenuCalendarView('month', this)">Месяц</div>
+                            </div>
+
+                            <div class="menu-calendar-toolbar">
+                                <button class="btn btn-secondary btn-small" onclick="moveMenuCalendar(-1)">←</button>
+                                <button class="btn btn-secondary btn-small" onclick="moveMenuCalendar(0)">Сегодня</button>
+                                <button class="btn btn-secondary btn-small" onclick="moveMenuCalendar(1)">→</button>
+                                <div id="menuCalendarTitle" class="menu-calendar-title"></div>
+                            </div>
+                            <div id="subscriptionCalendarInfo" class="menu-calendar-subinfo"></div>
+
+                            <div class="menu-calendar-scroll">
+                                <div class="menu-calendar-weekdays">
+                                    <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
+                                </div>
+                                <div id="menuCalendar" class="menu-calendar-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="studentPaymentSection" class="hidden">
+                        <div class="grid-2">
+                            <div class="card">
+                                <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/oplata.svg') }}" alt="">Баланс и абонемент</div>
+                                <div class="stat-value" id="balanceDisplay">0 ₽</div>
+                                <div class="stat-label" style="margin-top: 8px;">Текущий баланс</div>
+                                
+                                <div id="subscriptionInfo" class="subscription-info-box"></div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/card.svg') }}" alt="">Мои карты</div>
+                                <div id="cardsList" class="cards-list">
+                                </div>
+                                <button class="btn btn-primary" style="width: 100%;" onclick="showAddCardForm()">
+                                    + Добавить карту
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="addCardSection" class="card hidden" style="margin-top: 20px;">
+                            <div class="card-title">Добавить новую карту</div>
+                            <form id="addCardForm" class="card-form">
+                                <div class="grid-2">
+                                    <div class="form-group">
+                                        <label class="form-label">Номер карты (не сохраняется)</label>
+                                        <input type="text" class="form-input" id="cardNumberInput" 
+                                            inputmode="numeric" autocomplete="cc-number"
+                                            placeholder="9999 9999 9999 9999" maxlength="19" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Имя на карте (не сохраняется)</label>
+                                        <input type="text" class="form-input" id="cardHolderInput" 
+                                            autocomplete="cc-name" placeholder="IVAN IVANOV" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Срок действия (не сохраняется)</label>
+                                        <input type="text" class="form-input" id="cardExpiryInput" 
+                                            inputmode="numeric" autocomplete="cc-exp"
+                                            placeholder="99/99" maxlength="5" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">CVV (не сохраняется)</label>
+                                        <input type="password" class="form-input" id="cardCvvInput" 
+                                            inputmode="numeric" autocomplete="cc-csc"
+                                            placeholder="***" maxlength="3" required>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button type="submit" class="btn btn-success">Добавить карту</button>
+                                    <button type="button" class="btn btn-secondary" onclick="hideAddCardForm()">Отмена</button>
+                                </div>
+                            </form>
+                            <div class="form-hint" style="margin-top: 10px;">
+                                Данные карты (номер, имя, срок и CVV) <b>не сохраняются</b> ни на сервере, ни в браузере.
+                                После добавления сохраняется только <b>токен</b> и последние <b>4 цифры</b> для отображения.
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-top: 20px;">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/price.svg') }}" alt="">Оплата питания</div>
+                            <form id="paymentForm">
+                                <div class="grid-2">
+                                    <div class="form-group">
+                                        <label class="form-label">Сумма (₽)</label>
+                                        <input type="number" class="form-input" name="amount" id="paymentAmountInput" min="1" step="0.01" required>
+                                        <div id="subscriptionPriceHint" style="margin-top: 6px; color: var(--text-muted); font-size: 12px;"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Тип оплаты</label>
+                                        <select class="form-select" name="payment_type" id="paymentTypeSelect">
+                                            <option value="single">Разовая оплата</option>
+                                            <option value="subscription">Абонемент</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group hidden" id="subscriptionDaysGroup">
+                                        <label class="form-label">Количество дней</label>
+                                        <input type="number" class="form-input" name="days" id="subscriptionDaysInput" min="1" value="20">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Тип питания</label>
+                                        <select class="form-select" name="meal_type" id="paymentMealTypeSelect">
+                                            <option value="breakfast">Завтрак</option>
+                                            <option value="lunch">Обед</option>
+                                            <option value="both">Завтрак + Обед</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group hidden" id="paymentCardSelectGroup">
+                                        <label class="form-label">Карта для оплаты</label>
+                                        <select class="form-select" name="card_id" id="paymentCardSelect"></select>
+                                        <div id="paymentCardSelectHint" class="form-hint" style="margin-top: 6px;"></div>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 12px;">Оплатить</button>
+                                <div id="paymentCardRequiredHint" class="form-hint" style="margin-top: 8px;"></div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div id="studentClaimSection" class="hidden">
+                        <div class="card">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/info.svg') }}" alt="">Как получить питание</div>
+                            <div class="claim-info-box">
+                                <div class="claim-step">
+                                    <div class="claim-step-number">1</div>
+                                    <div class="claim-step-content">
+                                        <div class="claim-step-title">Подойдите к повару</div>
+                                        <div class="claim-step-desc">Назовите ФИО (или логин)</div>
+                                    </div>
+                                </div>
+                                <div class="claim-step">
+                                    <div class="claim-step-number">2</div>
+                                    <div class="claim-step-content">
+                                        <div class="claim-step-title">Повар выдаст питание</div>
+                                        <div class="claim-step-desc">Выдача фиксируется в системе (списывается баланс/абонемент)</div>
+                                    </div>
+                                </div>
+                                <div class="claim-step">
+                                    <div class="claim-step-number">3</div>
+                                    <div class="claim-step-content">
+                                        <div class="claim-step-title">Отметьте, получили вы питание или нет</div>
+                                        <div class="claim-step-desc">Это нужно для учёта выдачи</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                       
+                        <div class="card" style="margin-top: 20px;">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/meal.svg') }}" alt="">Питание сегодня</div>
+
+                            <div class="grid-2">
+                                <div class="meal-status-box">
+                                    <div class="meal-status-title"><img class="ui-icon ui-icon-sm" src="{{ url_for('static', filename='img/cook.svg') }}" alt="">Завтрак</div>
+                                    <div id="breakfastClaimInfo" class="meal-status-info"></div>
+                                    <div class="meal-status-actions">
+                                        <button class="btn btn-success" id="breakfastConfirmYesBtn" onclick="confirmMealReceipt('breakfast', true)">Получил</button>
+                                        <button class="btn btn-danger" id="breakfastConfirmNoBtn" onclick="confirmMealReceipt('breakfast', false)">Не получил</button>
+                                    </div>
+                                </div>
+
+                                <div class="meal-status-box">
+                                    <div class="meal-status-title"><img class="ui-icon ui-icon-sm" src="{{ url_for('static', filename='img/cook.svg') }}" alt="">Обед</div>
+                                    <div id="lunchClaimInfo" class="meal-status-info"></div>
+                                    <div class="meal-status-actions">
+                                        <button class="btn btn-success" id="lunchConfirmYesBtn" onclick="confirmMealReceipt('lunch', true)">Получил</button>
+                                        <button class="btn btn-danger" id="lunchConfirmNoBtn" onclick="confirmMealReceipt('lunch', false)">Не получил</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="mealClaimSummary" class="meal-claim-summary"></div>
+                        </div>
+                
+                        <div class="card" style="margin-top: 20px;">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/history.svg') }}" alt="">История выдачи (сегодня)</div>
+                            <div id="mealClaimHistory" class="meal-claim-history">
+
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="studentAllergiesSection" class="hidden">
+                        <div class="card">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/warn.svg') }}" alt="">Управление аллергенами</div>
+                            <form id="allergyForm">
+                                <div id="allergenCheckboxes" class="allergen-grid"></div>
+                                <button type="submit" class="btn btn-success" style="margin-top: 16px;">Сохранить</button>
+                            </form>
+                            <div id="allergiesSaveStatus" style="margin-top: 12px; color: var(--text-muted); font-size: 12px;"></div>
+
+                            <hr style="margin: 30px 0; border: none; border-top: 1px solid var(--border);" />
+
+                            <div class="card-subtitle">Пищевые предпочтения</div>
+                            <form id="preferencesForm">
+                                <div class="form-group">
+                                    <textarea class="form-input" id="preferencesInput" name="preferences" rows="3"
+                                        placeholder="Например: без сахара, вегетарианское..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-success">Сохранить</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div id="studentReviewsSection" class="hidden">
+                        <div class="card">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/comment.svg') }}" alt="">Оставить отзыв</div>
+                            <form id="reviewForm">
+                                <div class="grid-2">
+                                    <div class="form-group">
+                                        <label class="form-label">Блюдо</label>
+                                        <select class="form-select" name="menu_item_id" id="reviewMenuSelect"></select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Оценка</label>
+                                        <select class="form-select" name="rating">
+                                            <option value="5">5 — Отлично</option>
+                                            <option value="4">4 — Хорошо</option>
+                                            <option value="3">3 — Нормально</option>
+                                            <option value="2">2 — Плохо</option>
+                                            <option value="1">1 — Ужасно</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Комментарий</label>
+                                    <textarea class="form-input" name="comment" rows="3" placeholder="Расскажите подробнее..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-success">Отправить</button>
+                            </form>
+
+                            <div style="margin-top: 30px;">
+                                <h3 style="margin-bottom: 16px;">Последние отзывы</h3>
+                                <div id="reviewsList"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="studentNotificationsSection" class="hidden">
+                        <div class="card">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/notify.svg') }}" alt="">Уведомления</div>
+                            <button class="btn btn-secondary" onclick="loadNotifications()">Обновить</button>
+                            <div id="studentNotificationsList" style="margin-top: 16px;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="cookDashboard" class="hidden">                    
+                    <div id="cookStatsSection">
+                        <div class="grid-2">
+                            <div class="card">
+                                <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/report.svg') }}" alt="">Выдано сегодня</div>
+                                <div class="grid-2">
+                                    <div class="stat-card">
+                                        <div class="stat-value" id="breakfastCount">0</div>
+                                        <div class="stat-label">Завтраков</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-value" id="lunchCount">0</div>
+                                        <div class="stat-label">Обедов</div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-secondary" style="margin-top: 12px;" onclick="loadMealStats()">Обновить</button>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/info.svg') }}" alt="">Подсказка</div>
+                                <div style="color: var(--text-muted); font-size: 14px; line-height: 1.5;">
+                                    Выдавайте питание через раздел <b>«Выдача»</b>. Ученик затем отметит, получил он питание или нет.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="cookIssueSection" class="hidden">
+                        <div class="card">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/report.svg') }}" alt="">Выдача питания</div>
+                            <form id="issueMealForm">
+                                <div class="grid-2">
+                                    <div class="form-group" style="position: relative;">
+                                        <label class="form-label">Ученик (ФИО)</label>
+                                        <input type="text" class="form-input" id="issueStudentFullName" name="full_name"
+                                            placeholder="Начните вводить ФИО..." autocomplete="off" required>
+                                        <input type="hidden" id="issueStudentId" name="student_id">
+                                        <div id="issueStudentHint" class="form-hint" style="margin-top: 6px;"></div>
+                                        <div id="issueStudentSuggestions" class="suggestions hidden"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Тип питания</label>
+                                        <select class="form-select" id="issueMealTypeSelect" name="meal_type">
+                                            <option value="breakfast">Завтрак</option>
+                                            <option value="lunch">Обед</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Блюдо (на сегодня)</label>
+                                        <select class="form-select" id="issueMenuItemSelect" name="menu_item_id" required></select>
+                                        <div class="form-hint" style="margin-top: 6px;">Список берётся из меню на сегодня.</div>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 12px;">Выдать</button>
+                            </form>
+                        </div>
+                    </div>
+
+
+                    <div id="cookHistorySection" class="hidden">
+                        <div class="card">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/history.svg') }}" alt="">История выдачи</div>
+
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label class="form-label">Период</label>
+                                    <select class="form-select" id="cookHistoryPeriodSelect" onchange="onCookHistoryPeriodChange()">
+                                        <option value="1">Сегодня</option>
+                                        <option value="7" selected>7 дней</option>
+                                        <option value="30">30 дней</option>
+                                        <option value="custom">Другое…</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group" id="cookHistoryCustomDaysGroup" style="display: none;">
+                                    <label class="form-label">Дней (1–365)</label>
+                                    <input type="number" class="form-input" id="cookHistoryCustomDaysInput" min="1" max="365" value="7" onchange="loadCookMealHistory()">
+                                </div>
+                            </div>
+
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label class="form-label">Тип питания</label>
+                                    <select class="form-select" id="cookHistoryMealTypeSelect" onchange="loadCookMealHistory()">
+                                        <option value="">Все</option>
+                                        <option value="breakfast">Завтрак</option>
+                                        <option value="lunch">Обед</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Записи</label>
+                                    <select class="form-select" id="cookHistoryScopeSelect" onchange="loadCookMealHistory()">
+                                        <option value="all" selected>Все выдачи</option>
+                                        <option value="mine">Только мои</option>
+                                    </select>
+                                    <div class="form-hint" style="margin-top: 6px;">«Только мои» — записи, где вы указаны как выдавший.</div>
+                                </div>
+                            </div>
+
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top: 6px;">
+                                <button class="btn btn-secondary" onclick="loadCookMealHistory()">Обновить</button>
+                            </div>
+
+                            <div id="cookHistorySummary" class="form-hint" style="margin-top: 10px;"></div>
+
+                            <table id="cookHistoryTable" class="table" style="margin-top: 16px;"></table>
+                        </div>
+                    </div>
+                    
+                    <div id="cookDishesSection" class="hidden">
+                        <div class="grid-2">
+                            <div class="card">
+                                <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/cook.svg') }}" alt="">Создать блюдо</div>
+                                <form id="dishCreateForm" class="card-form">
+                                    <div class="form-group">
+                                        <label class="form-label">Название</label>
+                                        <input type="text" class="form-input" id="dishCreateName" required>
+                                    </div>
+
+                                    <div class="grid-2">
+                                        <div class="form-group">
+                                            <label class="form-label">Категория</label>
+                                            <select class="form-select" id="dishCreateCategory" required>
+                                                <option value="breakfast">Завтрак</option>
+                                                <option value="lunch">Обед</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Цена (₽)</label>
+                                            <input type="number" class="form-input" id="dishCreatePrice" min="0" step="0.01" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Описание</label>
+                                        <input type="text" class="form-input" id="dishCreateDescription" placeholder="Короткое описание">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Аллергены (через запятую)</label>
+                                        <input type="text" class="form-input" id="dishCreateAllergens" placeholder="молоко, яйца, глютен">
+                                        <div class="form-hint" style="margin-top: 6px;">Подсказка: допустимые аллергены — молоко, яйца, глютен, орехи, арахис, рыба, морепродукты, соя, кунжут.</div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Ингредиенты (кол-во на 1 порцию)</label>
+                                        <div id="dishIngredientsList" class="dish-ingredients-list"></div>
+                                        <button type="button" class="btn btn-secondary btn-small" style="margin-top: 10px;" onclick="addDishIngredientRow()">
+                                            + Добавить ингредиент
+                                        </button>
+                                        <div class="form-hint" style="margin-top: 6px;">
+                                            Количество указывается в единицах измерения продукта (кг/л/шт), заданных в разделе «Продукты».
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-success" style="width: 100%;">Создать блюдо</button>
+                                    <div id="dishCreateStatus" class="form-hint" style="margin-top: 8px;"></div>
+                                </form>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/cook.svg') }}" alt="">Блюда</div>
+                                <div id="dishControlList" style="color: var(--text-muted);">Загрузка...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    </div>
+                    
+                    <div id="cookProductsSection" class="hidden">
+                        <div class="card">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/cook.svg') }}" alt="">Продукты</div>
+                            <button class="btn btn-secondary" onclick="loadProducts()">Обновить</button>
+                            <table id="productsTable" class="table" style="margin-top: 16px;"></table>
+                        </div>
+                    </div>
+
+                    <div id="cookRequestsSection" class="hidden">
+                        <div class="grid-2">
+                            <div class="card">
+                                <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/application.svg') }}" alt="">Создать заявку на закупку</div>
+                                <form id="purchaseRequestForm">
+                                    <div class="form-group">
+                                        <label class="form-label">Продукт</label>
+                                        <select class="form-select" id="purchaseProductSelect" name="product_id" required></select>
+                                        <div id="purchaseProductHint" class="form-hint" style="margin-top: 6px;"></div>
+                                    </div>
+
+                                    <div class="grid-2">
+                                        <div class="form-group">
+                                            <label class="form-label">Количество</label>
+                                            <input type="number" class="form-input" name="quantity" min="0.1" step="0.1" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Ед. измерения</label>
+                                            <input type="text" class="form-input" id="purchaseUnitInput" name="unit" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Оценочная стоимость (₽)</label>
+                                        <input type="number" class="form-input" name="estimated_cost" min="0" step="0.01">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Комментарий</label>
+                                        <textarea class="form-input" name="reason" rows="2" placeholder="Причина/комментарий..."></textarea>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-success" style="width: 100%;">Отправить</button>
+                                </form>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/application.svg') }}" alt="">Мои заявки</div>
+                                <button class="btn btn-secondary" onclick="loadCookRequests()">Обновить</button>
+                                <table id="requestsTable" class="table" style="margin-top: 16px;"></table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="cookNotificationsSection" class="hidden">
+                        <div class="card">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/notify.svg') }}" alt="">Уведомления</div>
+                            <button class="btn btn-secondary" onclick="loadNotifications()">Обновить</button>
+                            <div id="cookNotificationsList" style="margin-top: 16px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="adminDashboard" class="hidden">
+                    <div id="adminStatsSection">
+                        <div class="grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalRevenue">0 ₽</div>
+                                <div class="stat-label">Выручка</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalMeals">0</div>
+                                <div class="stat-label">Выдано питаний</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="activeStudents">0</div>
+                                <div class="stat-label">Активных учеников</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" style="margin-top: 12px;" onclick="loadAdminStats()">Обновить</button>
+                    </div>
+
+                    <div id="adminRequestsSection" class="hidden">
+                        <div class="card">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/application.svg') }}" alt="">Заявки на закупку</div>
+                            <button class="btn btn-secondary" onclick="loadAdminRequests()">Обновить</button>
+                            <table id="adminRequestsTable" class="table" style="margin-top: 16px;"></table>
+                        </div>
+                    </div>
+
+                    <div id="adminReportSection" class="hidden">
+                        <div class="card">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/report.svg') }}" alt="">Отчёт</div>
+
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label class="form-label">Период</label>
+                                    <select class="form-select" id="reportPeriodSelect" onchange="onReportPeriodChange()">
+                                        <option value="7">7 дней</option>
+                                        <option value="30" selected>30 дней</option>
+                                        <option value="90">90 дней</option>
+                                        <option value="custom">Другое…</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="reportCustomDaysGroup" style="display: none;">
+                                    <label class="form-label">Дней (1–365)</label>
+                                    <input type="number" class="form-input" id="reportCustomDaysInput" min="1" max="365" value="30" onchange="loadReport()">
+                                </div>
+                            </div>
+
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top: 6px;">
+                                <button class="btn btn-primary" onclick="loadReport()">Показать</button>
+                                <button class="btn btn-secondary" onclick="downloadReport('pdf')">Скачать PDF</button>
+                                <button class="btn btn-secondary" onclick="downloadReport('csv')">Скачать CSV</button>
+                            </div>
+
+                            <div id="reportContent" style="margin-top: 16px;"></div>
+                        </div>
+                    </div>
+
+                    <div id="adminPricingSection" class="hidden">
+                        <div class="card">
+                            <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/price.svg') }}" alt="">Тарифы абонементов (₽/день)</div>
+                            <form id="adminPricingForm">
+                                <div class="grid-2">
+                                    <div class="form-group">
+                                        <label class="form-label">Завтрак</label>
+                                        <input type="number" class="form-input" id="subPriceBreakfast" step="0.01" min="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Обед</label>
+                                        <input type="number" class="form-input" id="subPriceLunch" step="0.01" min="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Завтрак + Обед</label>
+                                        <input type="number" class="form-input" id="subPriceBoth" step="0.01" min="0">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-success" style="width:100%; margin-top: 12px;">Сохранить</button>
+                                <div id="adminPricingStatus" class="form-hint" style="margin-top: 8px;"></div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div id="adminNotificationsSection" class="hidden">
+                        <div class="grid-2">
+                            <div class="card">
+                                <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/notify2.svg') }}" alt="">Создать уведомление</div>
+                                <form id="adminNotificationForm">
+                                    <div class="form-group">
+                                        <label class="form-label">Заголовок</label>
+                                        <input type="text" class="form-input" name="title" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Аудитория</label>
+                                        <select class="form-select" name="audience">
+                                            <option value="all">Всем</option>
+                                            <option value="student">Ученикам</option>
+                                            <option value="cook">Повару</option>
+                                            <option value="admin">Админам</option>
+                                            <option value="staff">Персоналу</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Текст</label>
+                                        <textarea class="form-input" name="message" rows="3" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success" style="width:100%;">Отправить</button>
+                                </form>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-title"><img class="ui-icon" src="{{ url_for('static', filename='img/notify.svg') }}" alt="">Уведомления</div>
+                                <button class="btn btn-secondary" onclick="loadNotifications()">Обновить</button>
+                                <div id="adminNotificationsList" style="margin-top: 16px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="{{ url_for('static', filename='script/script.js') }}"></script>
+</body>
+</html>
