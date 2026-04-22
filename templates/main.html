@@ -16,11 +16,27 @@
             <nav class="sidebar-nav" id="sidebarNav"></nav>
         </div>
 
+        <div class="menu-overlay" id="menuOverlay" aria-hidden="true"></div>
+        <aside class="sidebar-mobile" id="mobileSidebar" aria-hidden="true">
+            <div class="sidebar-logo sidebar-mobile-logo">
+                <span class="sidebar-logo-icon" aria-hidden="true"><img class="sidebar-logo-icon-img" src="{{ url_for('static', filename='img/canteen.svg') }}" alt=""></span>
+                <span class="sidebar-logo-text">Столовая</span>
+            </div>
+            <nav class="sidebar-nav sidebar-mobile-nav" id="mobileSidebarNav"></nav>
+        </aside>
+
     
         <div class="main-content">
             <div class="header">
                 <div class="header-content">
-                    <div class="header-title" id="headerTitle">Панель управления</div>
+                    <div class="header-main">
+                        <button class="burger-toggle" id="burgerToggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mobileSidebar">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </button>
+                        <div class="header-title" id="headerTitle">Панель управления</div>
+                    </div>
                     <div class="user-info">
                         <span class="user-name" id="userName"></span>
                         <span class="balance-display-header" id="headerBalance">0 ₽</span>

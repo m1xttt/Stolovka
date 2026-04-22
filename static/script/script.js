@@ -19,6 +19,7 @@ let _issueStudentSuggestionsCache = [];
 let _dishProductsCache = null;
 let _dishCreateInitialized = false;
 let _dishIngredientRowSeq = 0;
+const MOBILE_NAV_BREAKPOINT = 1024;
 
 
 
@@ -2126,13 +2127,7 @@ async function refreshNotificationBadge() {
         const resp = await apiFetch('/api/notifications/unread_count');
         const data = await resp.json();
         const count = Number(data.count || 0);
-        if (count > 0) {
-            badge.textContent = String(count);
-            badge.classList.remove('hidden');
-        } else {
-            badge.textContent = '';
-            badge.classList.add('hidden');
-        }
+        _setBadgeCount([badge, ..._getMirroredBadgeEls(badge.id)], count);
     } catch (e) {
     }
 }
@@ -2710,6 +2705,90 @@ function _setSelectedPaymentCardId(cardId) {
 
 let todayMealClaims = [];
 
+function isMobileViewport() {
+    return window.matchMedia(`(max-width: ${MOBILE_NAV_BREAKPOINT}px)`).matches;
+}
+
+function _getMirroredBadgeEls(badgeId) {
+    return Array.from(document.querySelectorAll(`[data-badge-source="${badgeId}"]`));
+}
+
+function _setBadgeCount(badgeEls, count) {
+    badgeEls.forEach(badge => {
+        if (!badge) return;
+        if (count > 0) {
+            badge.textContent = String(count);
+            badge.classList.remove('hidden');
+        } else {
+            badge.textContent = '';
+            badge.classList.add('hidden');
+        }
+    });
+}
+
+function setMobileMenuOpen(isOpen) {
+    const burgerToggle = document.getElementById('burgerToggle');
+    const mobileSidebar = document.getElementById('mobileSidebar');
+    const menuOverlay = document.getElementById('menuOverlay');
+    const shouldOpen = Boolean(isOpen) && isMobileViewport() && burgerToggle && mobileSidebar && menuOverlay;
+
+    document.body.classList.toggle('mobile-menu-open', !!shouldOpen);
+
+    if (burgerToggle) {
+        burgerToggle.classList.toggle('active', !!shouldOpen);
+        burgerToggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+        burgerToggle.setAttribute('aria-label', shouldOpen ? 'Закрыть меню' : 'Открыть меню');
+    }
+
+    if (mobileSidebar) {
+        mobileSidebar.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+    }
+
+    if (menuOverlay) {
+        menuOverlay.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+    }
+}
+
+function closeMobileMenu() {
+    setMobileMenuOpen(false);
+}
+
+function toggleMobileMenu() {
+    setMobileMenuOpen(!document.body.classList.contains('mobile-menu-open'));
+}
+
+function initMobileNavigation() {
+    const burgerToggle = document.getElementById('burgerToggle');
+    const menuOverlay = document.getElementById('menuOverlay');
+    if (!burgerToggle || !menuOverlay) return;
+
+    if (document.body.dataset.mobileNavBound !== '1') {
+        burgerToggle.addEventListener('click', () => {
+            toggleMobileMenu();
+        });
+
+        menuOverlay.addEventListener('click', () => {
+            closeMobileMenu();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.body.classList.contains('mobile-menu-open')) {
+                closeMobileMenu();
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (!isMobileViewport() && document.body.classList.contains('mobile-menu-open')) {
+                closeMobileMenu();
+            }
+        });
+
+        document.body.dataset.mobileNavBound = '1';
+    }
+
+    closeMobileMenu();
+}
+
 const NAVIGATION_CONFIG = {
     student: [
         { id: 'menu', icon: 'menu', text: 'Меню', section: 'Menu' },
@@ -2737,36 +2816,49 @@ const NAVIGATION_CONFIG = {
     ]
 };
 
-function initSidebar(role) {
-    const sidebarNav = document.getElementById('sidebarNav');
-    if (!sidebarNav) return;
-
+function buildNavigationMarkup(role, options = {}) {
+    const { mobile = false } = options;
     const navItems = NAVIGATION_CONFIG[role] || [];
-    let html = '';
 
-    navItems.forEach((item, index) => {
+    return navItems.map((item, index) => {
         const activeClass = index === 0 ? 'active' : '';
-        const badgeHtml = item.badge ? `<span class="badge badge-warning sidebar-badge hidden" id="${item.badge}"></span>` : '';
-        
-        html += `
-            <div class="sidebar-item ${activeClass}" data-section="${item.id}" onclick="navigateToSection('${role}', '${item.id}', this)">
+        const badgeHtml = item.badge
+            ? (mobile
+                ? `<span class="badge badge-warning sidebar-badge sidebar-badge-mobile hidden" data-badge-source="${item.badge}"></span>`
+                : `<span class="badge badge-warning sidebar-badge hidden" id="${item.badge}"></span>`)
+            : '';
+
+        return `
+            <div class="sidebar-item ${mobile ? 'sidebar-item-mobile' : ''} ${activeClass}" data-section="${item.id}" onclick="navigateToSection('${role}', '${item.id}', this)">
                 <div class="sidebar-icon">${iconImg(item.icon, 'sidebar-icon-img')}</div>
                 <div class="sidebar-text">${item.text}</div>
                 ${badgeHtml}
             </div>
         `;
-    });
+    }).join('');
+}
 
-    sidebarNav.innerHTML = html;
+function initSidebar(role) {
+    const sidebarNav = document.getElementById('sidebarNav');
+    const mobileSidebarNav = document.getElementById('mobileSidebarNav');
+    const html = buildNavigationMarkup(role);
+    const mobileHtml = buildNavigationMarkup(role, { mobile: true });
+
+    if (sidebarNav) {
+        sidebarNav.innerHTML = html;
+    }
+
+    if (mobileSidebarNav) {
+        mobileSidebarNav.innerHTML = mobileHtml;
+    }
+
+    initMobileNavigation();
 }
 
 function navigateToSection(role, sectionId, element) {
-    document.querySelectorAll('.sidebar-item').forEach(item => {
-        item.classList.remove('active');
+    document.querySelectorAll('.sidebar-item[data-section]').forEach(item => {
+        item.classList.toggle('active', item.dataset.section === sectionId);
     });
-    if (element) {
-        element.classList.add('active');
-    }
 
     const dashboard = document.getElementById(`${role}Dashboard`);
     if (dashboard) {
@@ -2787,6 +2879,7 @@ function navigateToSection(role, sectionId, element) {
     }
 
     loadSectionData(role, sectionId);
+    closeMobileMenu();
 }
 
 function loadSectionData(role, sectionId) {
@@ -2871,8 +2964,23 @@ function loadSectionData(role, sectionId) {
     }
 }
 
+const ICON_ALIASES = {
+    warning: 'warn',
+    bell: 'notify',
+    star: 'comment',
+    pricing: 'price',
+    requests: 'application',
+    dishes: 'cook',
+    products: 'cook',
+    stats: 'report',
+    issue: 'report',
+    trash: 'delete',
+    ticket: 'price'
+};
+
 function iconUrl(name) {
-    return `/static/img/icons/${name}.svg`;
+    const resolved = ICON_ALIASES[name] || name;
+    return `/static/img/${resolved}.svg`;
 }
 
 function iconImg(name, cls = 'ui-icon', alt = '') {
@@ -3847,4 +3955,3 @@ window.deleteCard = deleteCard;
 window.loadTodayMealClaims = loadTodayMealClaims;
 window.loadCookMealHistory = loadCookMealHistory;
 window.onCookHistoryPeriodChange = onCookHistoryPeriodChange;
-

@@ -173,6 +173,7 @@ body {
 .main-content {
     flex: 1;
     margin-left: var(--sidebar-width);
+    min-width: 0;
     transition: margin-left 0.3s ease;
 }
 
@@ -193,10 +194,105 @@ body {
     gap: 20px;
 }
 
+.header-main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
 .header-title {
     font-size: 20px;
     font-weight: 600;
     color: var(--text-primary);
+}
+
+.burger-toggle {
+    display: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    flex-shrink: 0;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.burger-toggle:hover {
+    background: var(--surface);
+    border-color: var(--border-light);
+}
+
+.burger-toggle span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.burger-toggle.active span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.burger-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.burger-toggle.active span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+.menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+    z-index: 1090;
+}
+
+.sidebar-mobile {
+    display: none;
+}
+
+.sidebar-mobile .sidebar-logo {
+    grid-template-columns: 56px 1fr;
+    height: 72px;
+}
+
+.sidebar-mobile .sidebar-logo-icon,
+.sidebar-mobile .sidebar-icon {
+    width: 56px;
+}
+
+.sidebar-mobile .sidebar-logo-text,
+.sidebar-mobile .sidebar-text,
+.sidebar-mobile .sidebar-badge {
+    opacity: 1;
+}
+
+.sidebar-mobile .sidebar-nav {
+    padding: 16px 0;
+    overflow-y: auto;
+}
+
+.sidebar-mobile .sidebar-item {
+    padding-right: 16px;
+}
+
+.sidebar-mobile .sidebar-badge {
+    margin-right: 0;
 }
 
 .user-info {
@@ -233,6 +329,7 @@ body[data-role="admin"] .balance-delta {
     max-width: 1400px;
     margin: 0 auto;
     padding: 30px;
+    min-width: 0;
 }
 
 .btn {
@@ -419,6 +516,37 @@ body[data-role="admin"] .balance-delta {
 }
 
 .form-input::placeholder {
+    color: var(--text-muted);
+}
+
+.form-input-date {
+    min-height: 48px;
+    line-height: 1.2;
+    color-scheme: dark;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.form-input-date::-webkit-date-and-time-value {
+    text-align: left;
+}
+
+.form-input-date::-webkit-datetime-edit {
+    padding: 0;
+    color: var(--text-primary);
+}
+
+.form-input-date::-webkit-datetime-edit-fields-wrapper {
+    padding: 0;
+}
+
+.form-input-date::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.85;
+    filter: invert(84%) sepia(7%) saturate(104%) hue-rotate(137deg) brightness(97%) contrast(88%);
+}
+
+.form-input-date:invalid {
     color: var(--text-muted);
 }
 
@@ -1517,6 +1645,344 @@ body[data-role="admin"] .balance-delta {
     margin-top: 2px;
     font-size: 12px;
     color: var(--text-muted);
+}
+
+@media (max-width: 1024px) {
+    body {
+        overflow-x: hidden;
+    }
+
+    body.mobile-menu-open {
+        overflow: hidden;
+    }
+
+    .app-container {
+        display: block;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .sidebar-mobile {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: min(320px, calc(100vw - 24px));
+        max-width: 100%;
+        height: 100vh;
+        background: var(--bg-secondary);
+        border-right: 1px solid var(--border);
+        box-shadow: var(--shadow-lg);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1100;
+        overflow: hidden;
+    }
+
+    body.mobile-menu-open .sidebar-mobile {
+        transform: translateX(0);
+    }
+
+    body.mobile-menu-open .menu-overlay {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .header {
+        padding: 16px 20px;
+    }
+
+    .header-content {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .header-main {
+        width: 100%;
+    }
+
+    .burger-toggle {
+        display: inline-flex;
+    }
+
+    .header-title {
+        font-size: 18px;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+
+    .user-info {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 12px;
+    }
+
+    .container {
+        max-width: 100%;
+        padding: 20px;
+    }
+
+    .grid,
+    .grid-2,
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .card,
+    .virtual-card,
+    .meal-status-box,
+    .menu-item,
+    .notif-item {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .tabs {
+        flex-wrap: wrap;
+    }
+
+    .tab {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn {
+        white-space: normal;
+    }
+
+    .table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+
+    .menu-calendar-toolbar {
+        align-items: stretch;
+    }
+
+    .menu-calendar-toolbar .btn {
+        flex: 1 1 calc(33.333% - 8px);
+        min-width: 0;
+    }
+
+    .menu-calendar-title {
+        width: 100%;
+    }
+
+    .allergen-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+
+    .menu-item > div:last-child,
+    .subscription-info-row,
+    .notif-header,
+    .card-header {
+        flex-wrap: wrap;
+    }
+
+    #addCardForm > div:last-child {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: nowrap;
+    }
+
+    .user-info {
+        width: auto;
+        margin-left: auto;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+
+    .user-name,
+    .balance-display-header,
+    .balance-delta {
+        text-align: right;
+        justify-content: center;
+    }
+
+    .header-main {
+        width: auto;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .header-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .user-name {
+        width: auto;
+        max-width: 88px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .balance-display-header,
+    .balance-delta {
+        width: auto;
+        white-space: nowrap;
+    }
+
+    .user-info .btn {
+        width: auto;
+        white-space: nowrap;
+    }
+
+    .menu-calendar-weekdays {
+        display: none;
+    }
+
+    .menu-calendar-grid {
+        grid-template-columns: 1fr;
+        min-width: 0;
+        gap: 12px;
+    }
+
+    .menu-calendar-scroll {
+        overflow-x: visible;
+    }
+
+    .menu-calendar-day {
+        min-height: 0;
+        gap: 10px;
+    }
+
+    .menu-calendar-item {
+        align-items: flex-start;
+    }
+
+    .menu-calendar-item-name {
+        overflow-wrap: anywhere;
+    }
+
+    .meal-status-actions,
+    .subscription-info-row,
+    .notif-header,
+    .card-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dish-ingredient-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar-mobile {
+        width: min(300px, calc(100vw - 16px));
+    }
+
+    .container {
+        padding: 16px;
+    }
+
+    .card {
+        padding: 16px;
+    }
+
+    .header {
+        padding: 12px 14px;
+    }
+
+    .header-content {
+        gap: 10px;
+    }
+
+    .header-title {
+        font-size: 16px;
+    }
+
+    .burger-toggle {
+        width: 40px;
+        height: 40px;
+    }
+
+    .user-info {
+        gap: 6px;
+    }
+
+    .user-name {
+        font-size: 12px;
+    }
+
+    .balance-display-header {
+        padding: 7px 12px;
+        font-size: 14px;
+    }
+
+    .user-info .btn {
+        padding: 7px 12px;
+        font-size: 12px;
+    }
+
+    .tabs {
+        gap: 6px;
+    }
+
+    .tab {
+        flex: 1 1 calc(50% - 6px);
+    }
+
+    .allergen-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .menu-calendar-grid {
+        gap: 10px;
+    }
+
+    .menu-calendar-day {
+        padding: 8px;
+    }
+
+    .menu-item-price {
+        font-size: 16px;
+    }
+
+    .virtual-card {
+        min-height: auto;
+        padding: 18px;
+    }
+
+    .card-number {
+        font-size: 20px;
+        letter-spacing: 1px;
+    }
+
+    #addCardForm > div:last-child .btn {
+        width: 100%;
+    }
 }
 
 
