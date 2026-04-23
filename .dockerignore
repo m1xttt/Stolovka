@@ -1,0 +1,27 @@
+.git
+.gitignore
+.venv
+venv
+env
+__pycache__/
+__pychache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Runtime state is mounted separately by docker-compose.
+data/
+reports/
+canteen.db
+
+# Local OS/editor noise.
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

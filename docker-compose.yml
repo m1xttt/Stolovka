@@ -1,0 +1,24 @@
+services:
+  stolovka:
+    build:
+      context: .
+    container_name: stolovka
+    restart: unless-stopped
+    ports:
+      - "${STOLOVKA_HOST_PORT:-5267}:8000"
+    environment:
+      PORT: "8000"
+      WORKERS: "${STOLOVKA_WORKERS:-1}"
+      THREADS: "${STOLOVKA_THREADS:-4}"
+      TIMEOUT: "${STOLOVKA_TIMEOUT:-120}"
+      FLASK_SECRET_KEY: "${FLASK_SECRET_KEY:-change-me-before-public-deploy}"
+      CANTEEN_DB: /data/canteen.db
+      CANTEEN_REPORTS_DIR: /data/reports
+    volumes:
+      - ./data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=5).read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

@@ -40,10 +40,10 @@
 
 ``` bash
 cd stolovka
-docker-compose up --build
+docker compose up --build
 ```
 
-Открыть в браузере: **http://localhost:8080**
+Открыть в браузере: **http://localhost:5267**
 
 Данные сохраняются в: - `./data/canteen.db` - `./data/reports/`
 
@@ -58,7 +58,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Адрес по умолчанию: **http://localhost:8080**
+Адрес по умолчанию: **http://localhost:5267**
 
 ------------------------------------------------------------------------
 
